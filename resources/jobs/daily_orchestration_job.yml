@@ -1,0 +1,23 @@
+# Daily job: one task that runs the pipeline.
+# Retries and alerts are configured here; reruns are idempotent (see README, "Reruns and backfills").
+resources:
+  jobs:
+    daily_orchestration_job:
+      name: tacobueno_daily_pipeline
+      description: Runs the Taco Bueno medallion pipeline every day (bronze, silver, gold).
+      max_concurrent_runs: 1            # a pipeline can only run one update at a time
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"   # every day at 06:00; set it after the daily files land
+        timezone_id: America/Chicago
+        pause_status: UNPAUSED
+      email_notifications:
+        on_failure:
+          - ${var.notification_email}
+      tasks:
+        - task_key: run_pipeline
+          max_retries: 2
+          min_retry_interval_millis: 300000     # wait 5 minutes between retries
+          timeout_seconds: 7200
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.tacobueno_medallion_pipeline.id}
+            full_refresh: false                 # only set to true on purpose, never in the daily run
