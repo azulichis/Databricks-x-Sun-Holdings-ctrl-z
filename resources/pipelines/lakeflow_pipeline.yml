@@ -1,0 +1,21 @@
+
+resources:
+  pipelines:
+    taco_bueno_descuentos_medallion:
+      name: 'Taco Bueno Descuentos - Medallion'
+
+      catalog: tacobueno
+      target: discounting_bronze
+
+      libraries:
+        - glob:
+            include: ../src/transformations/**
+
+      root_path: ../src/transformations
+
+      serverless: true
+      photon: true
+      channel: current
+
+      continuous: false
+      development: true
